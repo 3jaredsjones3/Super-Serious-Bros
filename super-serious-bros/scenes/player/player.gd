@@ -1,26 +1,30 @@
 extends CharacterBody2D
 
+@export var move_speed: float = 130.0
+
 @onready var sprite: AnimatedSprite2D = $Visuals
 
 
 func _physics_process(_delta: float) -> void:
-	debug_animation_input()
+	var input_dir := Input.get_axis("move_left", "move_right")
+
+	velocity.x = input_dir * move_speed
+	velocity.y = 0.0
+
+	move_and_slide()
+
+	update_animation(input_dir)
 
 
-func debug_animation_input() -> void:
-	if Input.is_action_pressed("move_right"):
-		play_anim("run")
+func update_animation(input_dir: float) -> void:
+	if input_dir > 0.0:
 		sprite.flip_h = false
-		print_debug("Playing run, facing right")
-
-	elif Input.is_action_pressed("move_left"):
-		play_anim("double_jump")
+		play_anim("run")
+	elif input_dir < 0.0:
 		sprite.flip_h = true
-		print_debug("Playing double_jump, facing left")
-
+		play_anim("run")
 	else:
 		play_anim("idle")
-		print_debug("Playing idle")
 
 
 func play_anim(anim_name: StringName) -> void:
