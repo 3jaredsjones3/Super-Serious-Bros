@@ -1,6 +1,6 @@
 # Super Serious Bros
 
-A small 2D platformer built in **Godot 4.6.2** as a team practice project.
+A small 2D platformer built in **Godot 4.6.3** as a team practice project.
 
 The main goal is to learn how to collaborate on a Godot game: scene organization, reusable components, feature branches, pull requests, level design workflow, player feel, enemies, hazards, UI, audio, shaders, and general polish.
 
@@ -28,7 +28,7 @@ Current/planned prototype features:
 Use:
 
 ```txt
-Godot 4.6.2 stable mono
+Godot 4.6.3 stable mono
 ```
 
 Please use the same Godot version unless the team agrees to upgrade.
@@ -41,7 +41,7 @@ Clone the repository:
 git clone https://github.com/3jaredsjones3/Super-Serious-Bros.git
 ```
 
-Open Godot 4.6.2, choose **Import**, and select:
+Open Godot 4.6.3, choose **Import**, and select:
 
 ```txt
 project.godot
