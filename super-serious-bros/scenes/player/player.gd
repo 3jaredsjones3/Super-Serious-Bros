@@ -7,6 +7,7 @@ extends CharacterBody2D
 @export var fast_fall_multiplier: float = 1.8
 @export var jump_velocity: float = -300.0
 @export var double_jump_velocity: float = -280.0 #Jump slightly slower on the second upwards jump
+@export var jump_cut_multiplier: float = 0.45
 
 var can_double_jump: bool = false
 
@@ -22,6 +23,7 @@ func _physics_process(delta: float) -> void:
 
 	apply_gravity(delta)
 	handle_jump()
+	handle_jump_cut()
 	move_and_slide()
 
 	update_after_move()
@@ -61,9 +63,16 @@ func do_double_jump() -> void:
 	can_double_jump = false
 	play_anim("double_jump")
 
+
+func handle_jump_cut() -> void:
+	if Input.is_action_just_released("jump") and velocity.y < 0.0:
+		velocity.y *= jump_cut_multiplier
+
+
 func update_after_move() -> void:
 	if is_on_floor():
 		can_double_jump = true
+
 
 func update_animation() -> void:
 	if sprite.animation == "double_jump" and sprite.is_playing():
