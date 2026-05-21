@@ -23,3 +23,5 @@ animation = &"double_jump"
 [node name="FloorCheck" type="RayCast2D" parent="." unique_id=999778971]
 
 [node name="CameraAnchor" type="Marker2D" parent="." unique_id=990011535]
+
+[node name="Camera2D" type="Camera2D" parent="CameraAnchor" unique_id=1854149998]
