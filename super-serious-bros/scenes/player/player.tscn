@@ -4,8 +4,11 @@
 [ext_resource type="Script" uid="uid://cqd01ym5ntvp4" path="res://scenes/player/player.gd" id="1_dovo2"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dovo2"]
-radius = 9.0
+radius = 8.0
 height = 28.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dovo2"]
+size = Vector2(18, 21)
 
 [node name="Player" type="CharacterBody2D" unique_id=346862562]
 script = ExtResource("1_dovo2")
@@ -21,12 +24,20 @@ animation = &"idle"
 [node name="Hurtbox" type="Area2D" parent="." unique_id=2633739]
 
 [node name="HurtBounds" type="CollisionShape2D" parent="Hurtbox" unique_id=91693263]
+position = Vector2(0, 0.5)
+shape = SubResource("RectangleShape2D_dovo2")
 
 [node name="WallCheckLeft" type="RayCast2D" parent="." unique_id=1353187917]
+position = Vector2(0, 5)
+target_position = Vector2(-12, 0)
 
 [node name="WallCheckRight" type="RayCast2D" parent="." unique_id=947128068]
+position = Vector2(0, 5)
+target_position = Vector2(12, 0)
 
 [node name="FloorCheck" type="RayCast2D" parent="." unique_id=999778971]
+position = Vector2(0, 5)
+target_position = Vector2(0, 16)
 
 [node name="CameraAnchor" type="Marker2D" parent="." unique_id=990011535]
 
