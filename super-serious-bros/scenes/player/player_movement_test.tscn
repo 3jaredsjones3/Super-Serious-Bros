@@ -162,3 +162,4 @@ tile_map_data = PackedByteArray("AAAAAAEAAAABAAEAAAD//wEAAAABAAEAAAD+/wEAAAABAAE
 tile_set = SubResource("TileSet_6f4gb")
 
 [node name="Player" parent="." unique_id=346862562 instance=ExtResource("2_8eqea")]
+gravity = 100.0
