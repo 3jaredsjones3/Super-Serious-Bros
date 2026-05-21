@@ -5,6 +5,7 @@ extends CharacterBody2D
 @onready var sprite: AnimatedSprite2D = $Visuals
 
 @export var fast_fall_multiplier: float = 1.8
+@export var jump_velocity: float = -300.0
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Input.get_axis("move_left", "move_right")
@@ -12,6 +13,7 @@ func _physics_process(delta: float) -> void:
 	velocity.x = input_dir * move_speed
 
 	apply_gravity(delta)
+	handle_jump()
 	move_and_slide()
 
 	update_animation(input_dir)
@@ -29,6 +31,10 @@ func apply_gravity(delta: float) -> void:
 
 	velocity.y += gravity * gravity_multiplier * delta
 
+
+func handle_jump() -> void:
+	if Input.is_action_just_pressed("jump") and is_on_floor():
+		velocity.y = jump_velocity
 
 
 func update_animation(input_dir: float) -> void:
