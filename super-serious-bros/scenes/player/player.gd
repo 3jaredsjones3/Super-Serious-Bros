@@ -6,17 +6,26 @@ extends CharacterBody2D
 
 @export var fast_fall_multiplier: float = 1.8
 @export var jump_velocity: float = -300.0
+@export var double_jump_velocity: float = -280.0 #Jump slightly slower on the second upwards jump
+
+var can_double_jump: bool = false
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Input.get_axis("move_left", "move_right")
 
 	velocity.x = input_dir * move_speed
 
+	if input_dir > 0.0:
+		sprite.flip_h = false
+	elif input_dir < 0.0:
+		sprite.flip_h = true
+
 	apply_gravity(delta)
 	handle_jump()
 	move_and_slide()
 
-	update_animation(input_dir)
+	update_after_move()
+	update_animation()
 
 
 func apply_gravity(delta: float) -> void:
@@ -33,20 +42,42 @@ func apply_gravity(delta: float) -> void:
 
 
 func handle_jump() -> void:
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = jump_velocity
+	if not Input.is_action_just_pressed("jump"):
+		return
+
+	if is_on_floor():
+		do_ground_jump()
+	elif can_double_jump:
+		do_double_jump()
 
 
-func update_animation(input_dir: float) -> void:
-	if input_dir > 0.0:
-		sprite.flip_h = false
-		play_anim("run")
-	elif input_dir < 0.0:
-		sprite.flip_h = true
+func do_ground_jump() -> void:
+	velocity.y = jump_velocity
+	can_double_jump = true
+
+		
+func do_double_jump() -> void:
+	velocity.y = double_jump_velocity
+	can_double_jump = false
+	play_anim("double_jump")
+
+func update_after_move() -> void:
+	if is_on_floor():
+		can_double_jump = true
+
+func update_animation() -> void:
+	if sprite.animation == "double_jump" and sprite.is_playing():
+		return
+	
+	if not is_on_floor():
+		if velocity.y < 0.0:
+			play_anim("jump")
+		else:
+			play_anim("fall")
+	elif absf(velocity.x) > 5.0:
 		play_anim("run")
 	else:
 		play_anim("idle")
-
 
 
 func play_anim(anim_name: StringName) -> void:
