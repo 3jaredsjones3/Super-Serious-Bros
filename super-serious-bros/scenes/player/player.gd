@@ -1,16 +1,17 @@
 extends CharacterBody2D
 
 @export var move_speed: float = 130.0
-
+@export var gravity: float = 900.0
 @onready var sprite: AnimatedSprite2D = $Visuals
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	var input_dir := Input.get_axis("move_left", "move_right")
 
 	velocity.x = input_dir * move_speed
-	velocity.y = 0.0
 
+	if not is_on_floor():
+		velocity.y += gravity * delta #positive y is down the screen so increasing velocity.y moves us downwards faster
 	move_and_slide()
 
 	update_animation(input_dir)
