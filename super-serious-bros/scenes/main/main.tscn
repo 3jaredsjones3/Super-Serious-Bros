@@ -432,3 +432,5 @@ texture = ExtResource("5_6q06x")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EndLevelFlag" unique_id=540556601]
 position = Vector2(0, 3)
 shape = SubResource("RectangleShape2D_th5th")
+
+[connection signal="body_entered" from="EndLevelFlag" to="EndLevelFlag" method="_on_body_entered"]
