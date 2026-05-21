@@ -3,14 +3,20 @@
 [ext_resource type="SpriteFrames" uid="uid://7fk2k5d1pdsi" path="res://scenes/player/player_sprite_frames.tres" id="1_8afob"]
 [ext_resource type="Script" uid="uid://cqd01ym5ntvp4" path="res://scenes/player/player.gd" id="1_dovo2"]
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dovo2"]
+radius = 9.0
+height = 28.0
+
 [node name="Player" type="CharacterBody2D" unique_id=346862562]
 script = ExtResource("1_dovo2")
 
 [node name="PlayerCollider" type="CollisionShape2D" parent="." unique_id=1256207449]
+position = Vector2(0, 2)
+shape = SubResource("CapsuleShape2D_dovo2")
 
 [node name="Visuals" type="AnimatedSprite2D" parent="." unique_id=578153730]
 sprite_frames = ExtResource("1_8afob")
-animation = &"double_jump"
+animation = &"idle"
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=2633739]
 
