@@ -11,6 +11,7 @@ config_version=5
 [application]
 
 config/name="Super Serious Bros"
+run/main_scene="uid://bva5v7lmqg6j0"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 
 [dotnet]
