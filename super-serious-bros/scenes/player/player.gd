@@ -13,11 +13,25 @@ extends CharacterBody2D
 @export var jump_cut_multiplier: float = 0.45
 @export var wall_slide_speed: float = 55.0
 
+@export var wall_jump_velocity: float = -300.0
+@export var wall_jump_push_speed: float = 160.0
+@export var wall_jump_control_lock_time: float = 0.12
+@export var wall_jumps_to_refresh_double_jump: int = 3
+
+var last_wall_jump_dir: int = 0
+var wall_jump_streak: int = 0
+var wall_jump_control_timer: float = 0.0
+
 var can_double_jump: bool = false
 var is_wall_sliding: bool = false
 
 func _physics_process(delta: float) -> void:
 	var input_dir := Input.get_axis("move_left", "move_right")
+
+	if wall_jump_control_timer > 0.0:
+		wall_jump_control_timer -= delta
+	else:
+		velocity.x = input_dir * move_speed
 
 	velocity.x = input_dir * move_speed
 
@@ -27,9 +41,9 @@ func _physics_process(delta: float) -> void:
 		sprite.flip_h = true
 
 	apply_gravity(delta)
+	handle_wall_slide(input_dir) #sliding should be handled before jumping so the jump logic can check for it
 	handle_jump()
 	handle_jump_cut()
-	handle_wall_slide(input_dir)
 	move_and_slide()
 
 	update_after_move()
