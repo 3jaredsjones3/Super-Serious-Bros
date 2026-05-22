@@ -85,6 +85,7 @@ func _physics_process(delta: float) -> void:
 	handle_wall_slide(input_dir, delta) #sliding should be handled before jumping so the jump logic can check for it
 	handle_jump()
 	handle_jump_cut()
+	apply_velocity_external()
 	move_and_slide()
 
 	update_after_move()
