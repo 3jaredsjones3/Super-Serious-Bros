@@ -12,6 +12,9 @@ size = Vector2(18, 21)
 
 [node name="Player" type="CharacterBody2D" unique_id=346862562]
 script = ExtResource("1_dovo2")
+jump_buffer_window = 0.154
+wall_jumps_to_refresh_double_jump = 2
+wall_stick_window = 0.325
 
 [node name="PlayerCollider" type="CollisionShape2D" parent="." unique_id=1256207449]
 position = Vector2(0, 2)
