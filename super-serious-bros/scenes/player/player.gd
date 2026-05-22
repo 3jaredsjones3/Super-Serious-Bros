@@ -1,8 +1,11 @@
 extends CharacterBody2D
 
 @onready var sprite: AnimatedSprite2D = $Visuals
-@onready var wall_check_left: RayCast2D = $WallCheckLeft
-@onready var wall_check_right: RayCast2D = $WallCheckRight
+@onready var wall_contact_check_left: RayCast2D = $WallContactCheck_Left
+@onready var wall_contact_check_right: RayCast2D = $WallContactCheck_Right
+
+@onready var wall_jump_check_left: RayCast2D = $WallJumpCheck_Left
+@onready var wall_jump_check_right: RayCast2D = $WallJumpCheck_Right
 
 @export_group("General Movement")
 ## Horizontal movement speed in pixels per second.
@@ -36,20 +39,25 @@ extends CharacterBody2D
 ## Minimum horizontal distance in px required between wall jumps
 @export var min_wall_jump_horizontal_distance: float = 20.0
 
-
-
 @export var wall_stick_window: float = 0.18
+## Time in seconds after leaving a wall where a wall jump can still be triggered.
+@export_range(0.0, 0.3, 0.01, "suffix:s") var wall_coyote_window: float = 0.12
 
-var last_wall_jump_dir: int = 0
+
+var can_double_jump: bool = false
+var jump_buffer_timer: float = 0.0
+
 var wall_jump_streak: int = 0
 var wall_jump_control_timer: float = 0.0
 var last_wall_jump_x: float = -999999.0
 
-var can_double_jump: bool = false
 var is_wall_sliding: bool = false
-var jump_buffer_timer: float = 0.0
-
 var wall_stick_timer: float = 0.0
+var last_wall_jump_dir: int = 0
+
+var wall_coyote_timer: float = 0.0
+var remembered_wall_dir: int = 0
+
 
 #Since we only want to start stick and pause when we first touch a wall
 #or when we switch to a different wall side.
@@ -58,6 +66,8 @@ var last_wall_contact_dir: int = 0
 func _physics_process(delta: float) -> void:
 	update_jump_buffer(delta)
 	var input_dir := Input.get_axis("move_left", "move_right")
+
+	update_wall_memory(delta)
 
 	if wall_jump_control_timer > 0.0:
 		wall_jump_control_timer -= delta
@@ -97,7 +107,7 @@ func handle_jump() -> void:
 	if jump_buffer_timer <= 0.0:
 		return
 	
-	var wall_dir := get_wall_direction()
+	var wall_dir := get_wall_jump_direction()
 
 	if is_on_floor():
 		do_ground_jump()
@@ -143,7 +153,7 @@ func handle_wall_slide(input_dir: float, delta: float) -> void:
 		last_wall_contact_dir = 0	
 		return
 	
-	var wall_dir: int = get_wall_direction()
+	var wall_dir: int = get_wall_contact_direction()
 	
 	#If we're not in contact with a wall, then we're not wall sliding
 	if wall_dir == 0:
@@ -187,8 +197,31 @@ func do_wall_jump(wall_dir: int) -> void:
 	if wall_jump_streak >= wall_jumps_to_refresh_double_jump:
 		can_double_jump = true
 	
+	wall_coyote_timer = 0.0
+	remembered_wall_dir = 0
+	wall_stick_timer = 0.0
+	last_wall_contact_dir = 0
+	
 	is_wall_sliding = false
 	play_anim("jump")
+
+
+func update_wall_memory(delta: float) -> void:
+	var contact_wall_dir := get_wall_contact_direction()
+
+	if is_on_floor():
+		wall_coyote_timer = 0.0
+		remembered_wall_dir = 0
+		return
+
+	if contact_wall_dir != 0:
+		remembered_wall_dir = contact_wall_dir
+		wall_coyote_timer = wall_coyote_window
+	else:
+		wall_coyote_timer = maxf(wall_coyote_timer - delta, 0.0)
+
+		if wall_coyote_timer <= 0.0:
+			remembered_wall_dir = 0
 
 
 func can_wall_jump(wall_dir: int) -> bool:
@@ -212,13 +245,46 @@ func can_wall_jump(wall_dir: int) -> bool:
 	return true
 
 
-func get_wall_direction() -> int:
-	if wall_check_left.is_colliding():
+func get_wall_contact_direction() -> int:
+	if wall_contact_check_left.is_colliding():
 		return -1
-	if wall_check_right.is_colliding():
+	if wall_contact_check_right.is_colliding():
 		return 1
 	
 	return 0
+
+
+#The idea is that we probe a bit farther to allow the player to respond to anticipated wall jumps in a sequence a bit early
+func get_wall_jump_probe_direction() -> int:
+	var left_hit := wall_jump_check_left.is_colliding()
+	var right_hit := wall_jump_check_right.is_colliding()
+
+	if left_hit and not right_hit:
+		return -1
+
+	if right_hit and not left_hit:
+		return 1
+
+	if left_hit and right_hit:
+		# In a narrow gap, prefer the wall opposite the last wall jump.
+		if last_wall_jump_dir == -1:
+			return 1
+		if last_wall_jump_dir == 1:
+			return -1
+
+	return 0
+
+
+func get_wall_jump_direction() -> int:
+	var contact_wall_dir := get_wall_contact_direction()
+
+	if contact_wall_dir != 0:
+		return contact_wall_dir
+
+	if wall_coyote_timer > 0.0:
+		return remembered_wall_dir
+
+	return get_wall_jump_probe_direction()
 
 
 func update_jump_buffer(delta: float) -> void:

@@ -8,7 +8,7 @@ radius = 8.0
 height = 28.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_dovo2"]
-size = Vector2(18, 21)
+size = Vector2(14, 16)
 
 [node name="Player" type="CharacterBody2D" unique_id=346862562]
 script = ExtResource("1_dovo2")
@@ -27,16 +27,24 @@ animation = &"idle"
 [node name="Hurtbox" type="Area2D" parent="." unique_id=2633739]
 
 [node name="HurtBounds" type="CollisionShape2D" parent="Hurtbox" unique_id=91693263]
-position = Vector2(0, 0.5)
+position = Vector2(0, 3)
 shape = SubResource("RectangleShape2D_dovo2")
 
-[node name="WallCheckLeft" type="RayCast2D" parent="." unique_id=1353187917]
+[node name="WallContactCheck_Left" type="RayCast2D" parent="." unique_id=1353187917]
 position = Vector2(0, 5)
-target_position = Vector2(-20, 0)
+target_position = Vector2(-12, 0)
 
-[node name="WallCheckRight" type="RayCast2D" parent="." unique_id=947128068]
+[node name="WallContactCheck_Right" type="RayCast2D" parent="." unique_id=947128068]
+position = Vector2(0, 5)
+target_position = Vector2(12, 0)
+
+[node name="WallJumpCheck_Right" type="RayCast2D" parent="." unique_id=1898476654]
 position = Vector2(0, 5)
 target_position = Vector2(20, 0)
+
+[node name="WallJumpCheck_Left" type="RayCast2D" parent="." unique_id=730165298]
+position = Vector2(0, 5)
+target_position = Vector2(-20, 0)
 
 [node name="FloorCheck" type="RayCast2D" parent="." unique_id=999778971]
 position = Vector2(0, 5)
