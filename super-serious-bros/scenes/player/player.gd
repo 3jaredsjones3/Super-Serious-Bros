@@ -63,6 +63,8 @@ var remembered_wall_dir: int = 0
 #or when we switch to a different wall side.
 var last_wall_contact_dir: int = 0
 
+var external_vel:Vector2
+
 func _physics_process(delta: float) -> void:
 	update_jump_buffer(delta)
 	var input_dir := Input.get_axis("move_left", "move_right")
@@ -83,11 +85,18 @@ func _physics_process(delta: float) -> void:
 	handle_wall_slide(input_dir, delta) #sliding should be handled before jumping so the jump logic can check for it
 	handle_jump()
 	handle_jump_cut()
+	apply_velocity_external()
 	move_and_slide()
 
 	update_after_move()
 	update_animation()
 
+func add_velocity_external(vel:Vector2):
+	external_vel += vel
+
+func apply_velocity_external():
+	velocity += external_vel
+	external_vel = Vector2.ZERO
 
 func apply_gravity(delta: float) -> void:
 	if is_on_floor():
