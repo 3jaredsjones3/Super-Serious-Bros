@@ -1,25 +1,94 @@
 extends CharacterBody2D
 
-@export var move_speed: float = 130.0
-@export var gravity: float = 900.0
 @onready var sprite: AnimatedSprite2D = $Visuals
+@onready var wall_contact_check_left: RayCast2D = $WallContactCheck_Left
+@onready var wall_contact_check_right: RayCast2D = $WallContactCheck_Right
 
+@onready var wall_jump_check_left: RayCast2D = $WallJumpCheck_Left
+@onready var wall_jump_check_right: RayCast2D = $WallJumpCheck_Right
+
+@export_group("General Movement")
+## Horizontal movement speed in pixels per second.
+@export var move_speed: float = 130.0
+## Downward acceleration applied while airborne.
+@export var gravity: float = 900.0
+## Multiplies gravity while holding down and falling.
 @export var fast_fall_multiplier: float = 1.8
+
+@export_group("Jumping")
+## Initial upward velocity for a normal ground jump.
 @export var jump_velocity: float = -300.0
+## Initial upward velocity for the second jump. Usually a bit weaker than ground jump.
+@export var double_jump_velocity: float = -280.0
+## Multiplier applied to upward velocity when jump is released early. Lower means shorter short-hops.
+@export_range(0.0, 1.0, 0.05) var jump_cut_multiplier: float = 0.45
+## Time in seconds that a jump input remains valid after being pressed.
+@export_range(0.0, 0.3, 0.01, "suffix:s") var jump_buffer_window: float = 0.12
+
+@export_group("Wall Movement")
+## Maximum downward speed while sliding on a wall.
+@export var wall_slide_speed: float = 55.0
+## Initial upward velocity applied by a wall jump.
+@export var wall_jump_velocity: float = -300.0
+## Horizontal push speed away from the wall during a wall jump.
+@export var wall_jump_push_speed: float = 160.0
+## Time in seconds before normal horizontal input can override wall-jump push.
+@export_range(0.0, 0.5, 0.01, "suffix:s") var wall_jump_control_lock_time: float = 0.12
+## Number of consecutive alternating wall jumps required to refresh double jump.
+@export_range(1, 10, 1) var wall_jumps_to_refresh_double_jump: int = 3
+## Minimum horizontal distance in px required between wall jumps
+@export var min_wall_jump_horizontal_distance: float = 20.0
+
+@export var wall_stick_window: float = 0.18
+## Time in seconds after leaving a wall where a wall jump can still be triggered.
+@export_range(0.0, 0.3, 0.01, "suffix:s") var wall_coyote_window: float = 0.12
+
+
+var can_double_jump: bool = false
+var jump_buffer_timer: float = 0.0
+
+var wall_jump_streak: int = 0
+var wall_jump_control_timer: float = 0.0
+var last_wall_jump_x: float = -999999.0
+
+var is_wall_sliding: bool = false
+var wall_stick_timer: float = 0.0
+var last_wall_jump_dir: int = 0
+
+var wall_coyote_timer: float = 0.0
+var remembered_wall_dir: int = 0
+
+
+#Since we only want to start stick and pause when we first touch a wall
+#or when we switch to a different wall side.
+var last_wall_contact_dir: int = 0
 
 var external_vel:Vector2
 
 func _physics_process(delta: float) -> void:
+	update_jump_buffer(delta)
 	var input_dir := Input.get_axis("move_left", "move_right")
 
-	velocity.x = input_dir * move_speed
+	update_wall_memory(delta)
+
+	if wall_jump_control_timer > 0.0:
+		wall_jump_control_timer -= delta
+	else:
+		velocity.x = input_dir * move_speed
+
+	if input_dir > 0.0:
+		sprite.flip_h = false
+	elif input_dir < 0.0:
+		sprite.flip_h = true
 
 	apply_gravity(delta)
+	handle_wall_slide(input_dir, delta) #sliding should be handled before jumping so the jump logic can check for it
 	handle_jump()
-	apply_velocity_external()
+	handle_jump_cut()
 	move_and_slide()
 
-	update_animation(input_dir)
+	update_after_move()
+	update_animation()
 
 func add_velocity_external(vel:Vector2):
 	external_vel += vel
@@ -42,20 +111,221 @@ func apply_gravity(delta: float) -> void:
 
 
 func handle_jump() -> void:
-	if Input.is_action_just_pressed("jump") and is_on_floor():
-		velocity.y = jump_velocity
+	
+	if jump_buffer_timer <= 0.0:
+		return
+	
+	var wall_dir := get_wall_jump_direction()
+
+	if is_on_floor():
+		do_ground_jump()
+		jump_buffer_timer = 0.0
+		return
+
+	elif can_wall_jump(wall_dir):
+		do_wall_jump(wall_dir)
+		jump_buffer_timer = 0.0
+		return
+			
+	elif can_double_jump:
+		do_double_jump()
+		jump_buffer_timer = 0.0
+		return
 
 
-func update_animation(input_dir: float) -> void:
-	if input_dir > 0.0:
-		sprite.flip_h = false
-		play_anim("run")
-	elif input_dir < 0.0:
-		sprite.flip_h = true
+func do_ground_jump() -> void:
+	velocity.y = jump_velocity
+	can_double_jump = true
+	wall_jump_streak = 0
+	last_wall_jump_dir = 0
+
+
+func do_double_jump() -> void:
+	velocity.y = double_jump_velocity
+	can_double_jump = false
+	wall_jump_streak = 0
+	play_anim("double_jump")
+
+
+func handle_jump_cut() -> void:
+	if Input.is_action_just_released("jump") and velocity.y < 0.0:
+		velocity.y *= jump_cut_multiplier
+
+
+func handle_wall_slide(input_dir: float, delta: float) -> void:
+	is_wall_sliding = false #start assuming we're not and make it prove that we are
+	
+	#If we're on the floor or moving upward, we're not wall sliding
+	if is_on_floor() or velocity.y <= 0.0:
+		wall_stick_timer = 0.0
+		last_wall_contact_dir = 0	
+		return
+	
+	var wall_dir: int = get_wall_contact_direction()
+	
+	#If we're not in contact with a wall, then we're not wall sliding
+	if wall_dir == 0:
+		wall_stick_timer = 0.0
+		last_wall_contact_dir = 0	
+		return
+
+	#Even if we are in contact with a wall, if we're not pressing against it then we're not wall sliding
+	if signf(input_dir) != wall_dir:
+		wall_stick_timer = 0.0
+		last_wall_contact_dir = 0	
+		return
+	
+	if wall_dir != last_wall_contact_dir:
+		wall_stick_timer = wall_stick_window
+		last_wall_contact_dir = wall_dir
+	
+	#By this point, we're wall sliding and we want to mark that so update_animation() in _physics_process() can see it
+	is_wall_sliding = true
+	
+	if wall_stick_timer > 0.0:
+		wall_stick_timer = maxf(wall_stick_timer - delta, 0.0)
+		velocity.y = 0.0
+	else:	
+		# Let slow falls stay slow, but cap fast falls to wall_slide_speed
+		# Note that we already ruled out upwards movement up above
+		velocity.y = minf(velocity.y, wall_slide_speed)
+
+
+func do_wall_jump(wall_dir: int) -> void:
+	last_wall_jump_x = global_position.x #note down where we are jumping from so can_wall_jump() can check it
+	
+	velocity.y = wall_jump_velocity
+	velocity.x = -wall_dir * wall_jump_push_speed #push away from the wall
+	#We'll employ a timer to commit the player to the wall jump direction (no quick dir reversals immediately after wall jump)
+	wall_jump_control_timer = wall_jump_control_lock_time 
+	
+	last_wall_jump_dir = wall_dir
+	wall_jump_streak += 1
+	
+	if wall_jump_streak >= wall_jumps_to_refresh_double_jump:
+		can_double_jump = true
+	
+	wall_coyote_timer = 0.0
+	remembered_wall_dir = 0
+	wall_stick_timer = 0.0
+	last_wall_contact_dir = 0
+	
+	is_wall_sliding = false
+	play_anim("jump")
+
+
+func update_wall_memory(delta: float) -> void:
+	var contact_wall_dir := get_wall_contact_direction()
+
+	if is_on_floor():
+		wall_coyote_timer = 0.0
+		remembered_wall_dir = 0
+		return
+
+	if contact_wall_dir != 0:
+		remembered_wall_dir = contact_wall_dir
+		wall_coyote_timer = wall_coyote_window
+	else:
+		wall_coyote_timer = maxf(wall_coyote_timer - delta, 0.0)
+
+		if wall_coyote_timer <= 0.0:
+			remembered_wall_dir = 0
+
+
+func can_wall_jump(wall_dir: int) -> bool:
+	if is_on_floor():
+		return false
+
+	if wall_dir == 0:
+		return false
+
+	if wall_dir == last_wall_jump_dir: #Can't wall jump off the same wall dir twice in a row
+		return false
+
+	if wall_jump_streak > 0:
+		var distance_from_last_wall_jump := absf(global_position.x - last_wall_jump_x)
+		#This is a guard against wall jumping back and forth in
+		# 1) narrow chimneys
+		# 2) over the top of a wall against either side (since that would satisfy the wall_dir == last_wall_jump_dir test)
+		if distance_from_last_wall_jump < min_wall_jump_horizontal_distance:
+			return false
+
+	return true
+
+
+func get_wall_contact_direction() -> int:
+	if wall_contact_check_left.is_colliding():
+		return -1
+	if wall_contact_check_right.is_colliding():
+		return 1
+	
+	return 0
+
+
+#The idea is that we probe a bit farther to allow the player to respond to anticipated wall jumps in a sequence a bit early
+func get_wall_jump_probe_direction() -> int:
+	var left_hit := wall_jump_check_left.is_colliding()
+	var right_hit := wall_jump_check_right.is_colliding()
+
+	if left_hit and not right_hit:
+		return -1
+
+	if right_hit and not left_hit:
+		return 1
+
+	if left_hit and right_hit:
+		# In a narrow gap, prefer the wall opposite the last wall jump.
+		if last_wall_jump_dir == -1:
+			return 1
+		if last_wall_jump_dir == 1:
+			return -1
+
+	return 0
+
+
+func get_wall_jump_direction() -> int:
+	var contact_wall_dir := get_wall_contact_direction()
+
+	if contact_wall_dir != 0:
+		return contact_wall_dir
+
+	if wall_coyote_timer > 0.0:
+		return remembered_wall_dir
+
+	return get_wall_jump_probe_direction()
+
+
+func update_jump_buffer(delta: float) -> void:
+	if Input.is_action_just_pressed("jump"):
+		jump_buffer_timer = jump_buffer_window
+	else:
+		jump_buffer_timer = maxf(jump_buffer_timer - delta, 0.0)
+
+
+func update_after_move() -> void:
+	if is_on_floor():
+		can_double_jump = true
+		wall_jump_streak = 0
+		last_wall_jump_dir = 0
+
+
+func update_animation() -> void:
+	if is_wall_sliding:
+		play_anim("wall_slide")
+		return
+	
+	if sprite.animation == "double_jump" and sprite.is_playing():
+		return
+	
+	if not is_on_floor():
+		if velocity.y < 0.0:
+			play_anim("jump")
+		else:
+			play_anim("fall")
+	elif absf(velocity.x) > 5.0:
 		play_anim("run")
 	else:
 		play_anim("idle")
-
 
 
 func play_anim(anim_name: StringName) -> void:
