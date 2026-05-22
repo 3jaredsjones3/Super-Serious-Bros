@@ -17,6 +17,7 @@ wall_jumps_to_refresh_double_jump = 2
 wall_stick_window = 0.325
 
 [node name="PlayerCollider" type="CollisionShape2D" parent="." unique_id=1256207449]
+visible = false
 position = Vector2(0, 2)
 shape = SubResource("CapsuleShape2D_dovo2")
 
@@ -24,32 +25,52 @@ shape = SubResource("CapsuleShape2D_dovo2")
 sprite_frames = ExtResource("1_8afob")
 animation = &"idle"
 
+[node name="CameraAnchor" type="Marker2D" parent="." unique_id=990011535]
+
+[node name="Camera2D" type="Camera2D" parent="CameraAnchor" unique_id=1854149998]
+
 [node name="Hurtbox" type="Area2D" parent="." unique_id=2633739]
+visible = false
 
 [node name="HurtBounds" type="CollisionShape2D" parent="Hurtbox" unique_id=91693263]
 position = Vector2(0, 3)
 shape = SubResource("RectangleShape2D_dovo2")
 
-[node name="WallContactCheck_Left" type="RayCast2D" parent="." unique_id=1353187917]
+[node name="HitBox" type="Area2D" parent="." unique_id=285630027]
+
+[node name="Hitbounds" type="CollisionShape2D" parent="HitBox" unique_id=1424046643]
+
+[node name="EnvironmentalSensors" type="Node2D" parent="." unique_id=412048969]
+
+[node name="WallContactCheck_Left" type="RayCast2D" parent="EnvironmentalSensors" unique_id=1353187917]
+visible = false
 position = Vector2(0, 5)
 target_position = Vector2(-12, 0)
 
-[node name="WallContactCheck_Right" type="RayCast2D" parent="." unique_id=947128068]
+[node name="WallContactCheck_Right" type="RayCast2D" parent="EnvironmentalSensors" unique_id=947128068]
+visible = false
 position = Vector2(0, 5)
 target_position = Vector2(12, 0)
 
-[node name="WallJumpCheck_Right" type="RayCast2D" parent="." unique_id=1898476654]
+[node name="LedgeCheck_Left" type="RayCast2D" parent="EnvironmentalSensors" unique_id=2041854277]
+position = Vector2(1, -5)
+target_position = Vector2(-12, 0)
+
+[node name="LedgeCheck_Right" type="RayCast2D" parent="EnvironmentalSensors" unique_id=1434524821]
+position = Vector2(1, -5)
+target_position = Vector2(12, 0)
+
+[node name="WallJumpCheck_Right" type="RayCast2D" parent="EnvironmentalSensors" unique_id=1898476654]
+visible = false
 position = Vector2(0, 5)
 target_position = Vector2(20, 0)
 
-[node name="WallJumpCheck_Left" type="RayCast2D" parent="." unique_id=730165298]
+[node name="WallJumpCheck_Left" type="RayCast2D" parent="EnvironmentalSensors" unique_id=730165298]
+visible = false
 position = Vector2(0, 5)
 target_position = Vector2(-20, 0)
 
-[node name="FloorCheck" type="RayCast2D" parent="." unique_id=999778971]
+[node name="FloorCheck" type="RayCast2D" parent="EnvironmentalSensors" unique_id=999778971]
+visible = false
 position = Vector2(0, 5)
 target_position = Vector2(0, 16)
-
-[node name="CameraAnchor" type="Marker2D" parent="." unique_id=990011535]
-
-[node name="Camera2D" type="Camera2D" parent="CameraAnchor" unique_id=1854149998]
