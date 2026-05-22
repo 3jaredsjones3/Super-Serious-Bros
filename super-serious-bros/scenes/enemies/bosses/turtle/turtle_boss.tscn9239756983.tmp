@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://dmo885kuf4tgq"]
+
+[ext_resource type="Texture2D" uid="uid://dn5itypdmqlqy" path="res://assets/art/bosses/turtle/turtle_aseprite.png" id="1_11p2t"]
+[ext_resource type="Script" uid="uid://nfud5xm2g3au" path="res://scenes/enemies/bosses/turtle/turtle_boss.gd" id="1_6216a"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_6216a"]
+size = Vector2(67, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_e1nfc"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_11p2t")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="TurtleBoss" type="Node2D" unique_id=1808116800]
+
+[node name="TurtleCharacterBody" type="CharacterBody2D" parent="." unique_id=2131891778]
+script = ExtResource("1_6216a")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TurtleCharacterBody" unique_id=1333365692]
+position = Vector2(10.5, 11)
+shape = SubResource("RectangleShape2D_6216a")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2020974212]
+sprite_frames = SubResource("SpriteFrames_e1nfc")
