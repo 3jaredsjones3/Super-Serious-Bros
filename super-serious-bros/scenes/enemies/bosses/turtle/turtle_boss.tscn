@@ -20,7 +20,7 @@ size = Vector2(67, 32)
 [node name="TurtleCharacterBody" type="CharacterBody2D" unique_id=2131891778]
 script = ExtResource("1_6216a")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2020974212]
+[node name="Visuals" type="AnimatedSprite2D" parent="." unique_id=2020974212]
 sprite_frames = SubResource("SpriteFrames_e1nfc")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1333365692]

@@ -7,6 +7,8 @@ extends CharacterBody2D
 @export var fast_fall_multiplier: float = 1.8
 @export var jump_velocity: float = -300.0
 
+var external_vel:Vector2
+
 func _physics_process(delta: float) -> void:
 	var input_dir := Input.get_axis("move_left", "move_right")
 
@@ -14,10 +16,17 @@ func _physics_process(delta: float) -> void:
 
 	apply_gravity(delta)
 	handle_jump()
+	apply_velocity_external()
 	move_and_slide()
 
 	update_animation(input_dir)
 
+func add_velocity_external(vel:Vector2):
+	external_vel += vel
+
+func apply_velocity_external():
+	velocity += external_vel
+	external_vel = Vector2.ZERO
 
 func apply_gravity(delta: float) -> void:
 	if is_on_floor():

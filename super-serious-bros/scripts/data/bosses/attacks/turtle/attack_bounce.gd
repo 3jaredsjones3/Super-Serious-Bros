@@ -1,8 +1,8 @@
 extends Boss_Attack_Template
-class_name Boss_Turtle_Attack_Charge
+class_name Boss_Turtle_Attack_Bounce
 
-@export var CHARGE_SPEED = 300
-@export var BOUNCES_LIMIT = 3
+@export var CHARGE_SPEED = 60
+@export var BOUNCES_LIMIT = 8
 @export var GRAVITY: float = 260.0
 
 func _ready() -> void:
@@ -16,6 +16,8 @@ func perform_attack(player: Node2D, this:BossCharacterBody2D) -> void:
 	if player.global_position.x > this.global_position.x:
 		attack_dir = 1
 	var velocity := Vector2.ZERO
+	velocity.x = CHARGE_SPEED
+	velocity.y = -300
 
 	# limit bounces
 	while bounces < BOUNCES_LIMIT:
@@ -25,8 +27,6 @@ func perform_attack(player: Node2D, this:BossCharacterBody2D) -> void:
 
 		velocity.y += GRAVITY * delta
 		var collision := this.move_and_collide(velocity * delta)
-		
-		
 		
 		if collision:
 			var normal := collision.get_normal()
@@ -39,21 +39,21 @@ func perform_attack(player: Node2D, this:BossCharacterBody2D) -> void:
 				touched_wall = true
 		
 		if (touched_floor):
-			velocity.y *= -0.4
+			velocity.y *= -1
+			bounces += 1
 			if (abs(velocity.y) < 25):
 				velocity.y = 0
-			velocity.x += CHARGE_SPEED * attack_dir * delta
+		
 		if (touched_wall):
 			bounces += 1
 			attack_dir *= -1
-			velocity.y = -120
-			velocity.x *= -0.2
+			velocity.x *= -1
 		
-		if (velocity.y < -150):
-			velocity.y = -150
+		if (velocity.y < -200):
+			velocity.y = -200
 		
 		this.ToggleFlipHorizontal(sign(velocity.x))
 		
 		await this.get_tree().physics_frame
 	this.vulnerable = true
-	await this.FallToGround(-200)
+	await this.FallToGround(velocity.y)
