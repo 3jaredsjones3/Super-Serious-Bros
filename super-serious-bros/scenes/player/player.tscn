@@ -3,6 +3,7 @@
 [ext_resource type="SpriteFrames" uid="uid://7fk2k5d1pdsi" path="res://scenes/player/player_sprite_frames.tres" id="1_8afob"]
 [ext_resource type="Script" uid="uid://cqd01ym5ntvp4" path="res://scenes/player/player.gd" id="1_dovo2"]
 [ext_resource type="Curve" uid="uid://n4muoka4fq6j" path="res://resources/curves/fall_gravity_curve.tres" id="2_gmlin"]
+[ext_resource type="PackedScene" uid="uid://bn07g2uox1ry" path="res://scenes/UI/points/points.tscn" id="4_lvxji"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dovo2"]
 radius = 8.0
@@ -68,3 +69,9 @@ target_position = Vector2(-20, 0)
 [node name="FloorCheck" type="RayCast2D" parent="EnvironmentalSensors" unique_id=999778971]
 position = Vector2(0, 5)
 target_position = Vector2(0, 16)
+
+[node name="points" parent="." unique_id=1912270159 instance=ExtResource("4_lvxji")]
+offset_left = -558.0
+offset_top = -313.0
+offset_right = -558.0
+offset_bottom = -313.0
