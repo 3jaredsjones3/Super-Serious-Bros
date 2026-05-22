@@ -91,25 +91,6 @@ func apply_gravity(delta: float) -> void:
 
 	velocity.y += gravity * gravity_multiplier * delta
 
-func can_wall_jump(wall_dir: int) -> bool:
-	if is_on_floor():
-		return false
-
-	if wall_dir == 0:
-		return false
-
-	if wall_dir == last_wall_jump_dir: #Can't wall jump off the same wall dir twice in a row
-		return false
-
-	if wall_jump_streak > 0:
-		var distance_from_last_wall_jump := absf(global_position.x - last_wall_jump_x)
-		#This is a guard against wall jumping back and forth in
-		# 1) narrow chimneys
-		# 2) over the top of a wall against either side (since that would satisfy the wall_dir == last_wall_jump_dir test)
-		if distance_from_last_wall_jump < min_wall_jump_horizontal_distance:
-			return false
-
-	return true
 
 func handle_jump() -> void:
 	
@@ -140,6 +121,7 @@ func do_ground_jump() -> void:
 	wall_jump_streak = 0
 	last_wall_jump_dir = 0
 
+
 func do_double_jump() -> void:
 	velocity.y = double_jump_velocity
 	can_double_jump = false
@@ -147,41 +129,9 @@ func do_double_jump() -> void:
 	play_anim("double_jump")
 
 
-func do_wall_jump(wall_dir: int) -> void:
-	last_wall_jump_x = global_position.x #note down where we are jumping from so can_wall_jump() can check it
-	
-	velocity.y = wall_jump_velocity
-	velocity.x = -wall_dir * wall_jump_push_speed #push away from the wall
-	#We'll employ a timer to commit the player to the wall jump direction (no quick dir reversals immediately after wall jump)
-	wall_jump_control_timer = wall_jump_control_lock_time 
-	
-	last_wall_jump_dir = wall_dir
-	wall_jump_streak += 1
-	
-	if wall_jump_streak >= wall_jumps_to_refresh_double_jump:
-		can_double_jump = true
-	
-	is_wall_sliding = false
-	play_anim("jump")
-
-
 func handle_jump_cut() -> void:
 	if Input.is_action_just_released("jump") and velocity.y < 0.0:
 		velocity.y *= jump_cut_multiplier
-
-
-func update_jump_buffer(delta: float) -> void:
-	if Input.is_action_just_pressed("jump"):
-		jump_buffer_timer = jump_buffer_window
-	else:
-		jump_buffer_timer = maxf(jump_buffer_timer - delta, 0.0)
-
-
-func update_after_move() -> void:
-	if is_on_floor():
-		can_double_jump = true
-		wall_jump_streak = 0
-		last_wall_jump_dir = 0
 
 
 func handle_wall_slide(input_dir: float, delta: float) -> void:
@@ -223,6 +173,44 @@ func handle_wall_slide(input_dir: float, delta: float) -> void:
 		velocity.y = minf(velocity.y, wall_slide_speed)
 
 
+func do_wall_jump(wall_dir: int) -> void:
+	last_wall_jump_x = global_position.x #note down where we are jumping from so can_wall_jump() can check it
+	
+	velocity.y = wall_jump_velocity
+	velocity.x = -wall_dir * wall_jump_push_speed #push away from the wall
+	#We'll employ a timer to commit the player to the wall jump direction (no quick dir reversals immediately after wall jump)
+	wall_jump_control_timer = wall_jump_control_lock_time 
+	
+	last_wall_jump_dir = wall_dir
+	wall_jump_streak += 1
+	
+	if wall_jump_streak >= wall_jumps_to_refresh_double_jump:
+		can_double_jump = true
+	
+	is_wall_sliding = false
+	play_anim("jump")
+
+
+func can_wall_jump(wall_dir: int) -> bool:
+	if is_on_floor():
+		return false
+
+	if wall_dir == 0:
+		return false
+
+	if wall_dir == last_wall_jump_dir: #Can't wall jump off the same wall dir twice in a row
+		return false
+
+	if wall_jump_streak > 0:
+		var distance_from_last_wall_jump := absf(global_position.x - last_wall_jump_x)
+		#This is a guard against wall jumping back and forth in
+		# 1) narrow chimneys
+		# 2) over the top of a wall against either side (since that would satisfy the wall_dir == last_wall_jump_dir test)
+		if distance_from_last_wall_jump < min_wall_jump_horizontal_distance:
+			return false
+
+	return true
+
 
 func get_wall_direction() -> int:
 	if wall_check_left.is_colliding():
@@ -231,6 +219,20 @@ func get_wall_direction() -> int:
 		return 1
 	
 	return 0
+
+
+func update_jump_buffer(delta: float) -> void:
+	if Input.is_action_just_pressed("jump"):
+		jump_buffer_timer = jump_buffer_window
+	else:
+		jump_buffer_timer = maxf(jump_buffer_timer - delta, 0.0)
+
+
+func update_after_move() -> void:
+	if is_on_floor():
+		can_double_jump = true
+		wall_jump_streak = 0
+		last_wall_jump_dir = 0
 
 
 func update_animation() -> void:

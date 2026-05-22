@@ -32,11 +32,11 @@ shape = SubResource("RectangleShape2D_dovo2")
 
 [node name="WallCheckLeft" type="RayCast2D" parent="." unique_id=1353187917]
 position = Vector2(0, 5)
-target_position = Vector2(-15, 0)
+target_position = Vector2(-20, 0)
 
 [node name="WallCheckRight" type="RayCast2D" parent="." unique_id=947128068]
 position = Vector2(0, 5)
-target_position = Vector2(15, 0)
+target_position = Vector2(20, 0)
 
 [node name="FloorCheck" type="RayCast2D" parent="." unique_id=999778971]
 position = Vector2(0, 5)
