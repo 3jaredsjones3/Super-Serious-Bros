@@ -52,8 +52,8 @@ func perform_attack(player: Node2D, this:BossCharacterBody2D) -> void:
 		if (velocity.y < -200):
 			velocity.y = -200
 		
-		this.ToggleFlipHorizontal(sign(velocity.x))
+		this.toggle_flip_horizontal(sign(velocity.x))
 		
 		await this.get_tree().physics_frame
 	this.vulnerable = true
-	await this.FallToGround(velocity.y)
+	await this.fall_to_ground(velocity.y)

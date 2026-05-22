@@ -37,7 +37,7 @@ func attack_loop() -> void:
 		
 		vulnerable = false
 
-func ToggleFlipHorizontal(direction:int):
+func toggle_flip_horizontal(direction:int):
 	var lookRight:bool = false if sign(direction) == -1 else true
 	SPRITE.flip_h = lookRight
 	if (lookRight):
@@ -45,7 +45,7 @@ func ToggleFlipHorizontal(direction:int):
 	else:
 		SPRITE.offset.x = 0
 
-func FallToGround(momentum_y:float, momentum_x:float = 60):
+func fall_to_ground(momentum_y:float, momentum_x:float = 60):
 	var attack_dir := -1
 	var bounces := 0
 	# attack towards player
@@ -87,7 +87,7 @@ func FallToGround(momentum_y:float, momentum_x:float = 60):
 		if (fall_velocity.y < -350):
 			fall_velocity.y = -350
 		
-		ToggleFlipHorizontal(sign(fall_velocity.x))
+		toggle_flip_horizontal(sign(fall_velocity.x))
 		
 		await get_tree().physics_frame
 
