@@ -2,6 +2,7 @@
 
 [ext_resource type="SpriteFrames" uid="uid://7fk2k5d1pdsi" path="res://scenes/player/player_sprite_frames.tres" id="1_8afob"]
 [ext_resource type="Script" uid="uid://cqd01ym5ntvp4" path="res://scenes/player/player.gd" id="1_dovo2"]
+[ext_resource type="Curve" uid="uid://n4muoka4fq6j" path="res://resources/curves/fall_gravity_curve.tres" id="2_gmlin"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_dovo2"]
 radius = 8.0
@@ -12,12 +13,11 @@ size = Vector2(14, 16)
 
 [node name="Player" type="CharacterBody2D" unique_id=346862562]
 script = ExtResource("1_dovo2")
+fall_gravity_bonus_curve = ExtResource("2_gmlin")
 jump_buffer_window = 0.154
 wall_jumps_to_refresh_double_jump = 2
-wall_stick_window = 0.325
 
 [node name="PlayerCollider" type="CollisionShape2D" parent="." unique_id=1256207449]
-visible = false
 position = Vector2(0, 2)
 shape = SubResource("CapsuleShape2D_dovo2")
 
@@ -30,7 +30,6 @@ animation = &"idle"
 [node name="Camera2D" type="Camera2D" parent="CameraAnchor" unique_id=1854149998]
 
 [node name="Hurtbox" type="Area2D" parent="." unique_id=2633739]
-visible = false
 
 [node name="HurtBounds" type="CollisionShape2D" parent="Hurtbox" unique_id=91693263]
 position = Vector2(0, 3)
@@ -43,34 +42,29 @@ shape = SubResource("RectangleShape2D_dovo2")
 [node name="EnvironmentalSensors" type="Node2D" parent="." unique_id=412048969]
 
 [node name="WallContactCheck_Left" type="RayCast2D" parent="EnvironmentalSensors" unique_id=1353187917]
-visible = false
 position = Vector2(0, 5)
 target_position = Vector2(-12, 0)
 
 [node name="WallContactCheck_Right" type="RayCast2D" parent="EnvironmentalSensors" unique_id=947128068]
-visible = false
 position = Vector2(0, 5)
 target_position = Vector2(12, 0)
 
 [node name="LedgeCheck_Left" type="RayCast2D" parent="EnvironmentalSensors" unique_id=2041854277]
-position = Vector2(1, -5)
-target_position = Vector2(-12, 0)
+position = Vector2(1, -12)
+target_position = Vector2(-14, 0)
 
 [node name="LedgeCheck_Right" type="RayCast2D" parent="EnvironmentalSensors" unique_id=1434524821]
-position = Vector2(1, -5)
-target_position = Vector2(12, 0)
+position = Vector2(1, -12)
+target_position = Vector2(14, 0)
 
 [node name="WallJumpCheck_Right" type="RayCast2D" parent="EnvironmentalSensors" unique_id=1898476654]
-visible = false
 position = Vector2(0, 5)
 target_position = Vector2(20, 0)
 
 [node name="WallJumpCheck_Left" type="RayCast2D" parent="EnvironmentalSensors" unique_id=730165298]
-visible = false
 position = Vector2(0, 5)
 target_position = Vector2(-20, 0)
 
 [node name="FloorCheck" type="RayCast2D" parent="EnvironmentalSensors" unique_id=999778971]
-visible = false
 position = Vector2(0, 5)
 target_position = Vector2(0, 16)
