@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://bn07g2uox1ry"]
+
+[ext_resource type="Script" uid="uid://b7ipb57y8ahfh" path="res://scenes/UI/points/points.gd" id="1_ot2x5"]
+
+[node name="points" type="Control" unique_id=1912270159]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1028.0
+offset_bottom = -602.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_ot2x5")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1165613031]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+theme_override_constants/separation = 2
+
+[node name="strawberry_label" type="Label" parent="HBoxContainer" unique_id=336300024]
+layout_mode = 2
+text = "Strawberrys: "
+
+[node name="strawberry_amount" type="Label" parent="HBoxContainer" unique_id=1658771455]
+layout_mode = 2
+text = "0"

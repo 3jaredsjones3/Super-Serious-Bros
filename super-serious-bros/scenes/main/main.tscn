@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://dqhxwpf118f7x" path="res://scenes/main/end_level_flag.gd" id="4_l3cfh"]
 [ext_resource type="Texture2D" uid="uid://quwsuu1f4qcf" path="res://assets/art/pixel_adventure_packs/pixel_adventure_1/Items/Checkpoints/End/End (Idle).png" id="5_6q06x"]
 [ext_resource type="PackedScene" uid="uid://b1l8dmlpa044j" path="res://scenes/player/player.tscn" id="6_ow5a4"]
+[ext_resource type="PackedScene" uid="uid://d1t5hxokrm5hl" path="res://scenes/items/fruit/strawberry/strawberry.tscn" id="7_hujxm"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_l3cfh"]
 texture = ExtResource("1_iuonh")
@@ -570,5 +571,14 @@ shape = SubResource("RectangleShape2D_th5th")
 
 [node name="Player" parent="." unique_id=346862562 instance=ExtResource("6_ow5a4")]
 position = Vector2(58, -177)
+
+[node name="strawberry" parent="." unique_id=1874500116 instance=ExtResource("7_hujxm")]
+position = Vector2(28, -175)
+
+[node name="strawberry2" parent="." unique_id=694199517 instance=ExtResource("7_hujxm")]
+position = Vector2(9, -346)
+
+[node name="strawberry3" parent="." unique_id=1149945452 instance=ExtResource("7_hujxm")]
+position = Vector2(27, -262)
 
 [connection signal="body_entered" from="EndLevelFlag" to="EndLevelFlag" method="_on_body_entered"]
